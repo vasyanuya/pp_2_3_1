@@ -1,46 +1,44 @@
 package web.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import web.dao.UserDao;
 import web.model.User;
+import web.repositories.UsersRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 public class UserService {
 
-    private final UserDao userDao;
-
-    public UserService(UserDao userDao) {
-        this.userDao = userDao;
-    }
+    @Autowired
+    private UsersRepository usersRepository;
 
     public List<User> listUsers() {
-        return userDao.listUsers();
+        return usersRepository.findAll();
     }
 
-    public void createUser(User user) {
-        userDao.createUser(user);
-    }
 
     public User readUser(int id) {
-        return userDao.readUser(id);
+        Optional<User> foundUser = usersRepository.findById(id);
+        return foundUser.orElse(null);
     }
 
-    public void updateUser(User user) {
-        userDao.updateUser(user);
+    @Transactional
+    public void createUser(User user) {
+        usersRepository.save(user);
     }
 
-    public User deleteUser(int id) {
-        User user = null;
-        try {
-            user = userDao.deleteUser(id);
-        } catch (NullPointerException e) {
-            System.out.println("User doesn't found");
-        }
-        return user;
+    @Transactional
+    public void updateUser(User updatedUser) {
+        usersRepository.save(updatedUser);
+    }
+
+    @Transactional
+    public void deleteUser(int id) {
+        usersRepository.deleteById(id);
     }
 
 }
